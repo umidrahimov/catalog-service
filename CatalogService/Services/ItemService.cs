@@ -28,7 +28,7 @@ public class ItemService : IItemService
             var item = _mapper.Map<Item>(request);
             if (!_context.Categories.Any(x => x.CategoryId == request.CategoryId))
             {
-                throw new KeyNotFoundException($"The referencec Category Id {request.CategoryId} does not exist.");
+                throw new KeyNotFoundException($"The referenced Category Id {request.CategoryId} does not exist.");
             }
             item.CreatedAt = DateTime.UtcNow;
             _context.Items.Add(item);
@@ -36,7 +36,7 @@ public class ItemService : IItemService
         }
         catch (KeyNotFoundException ex)
         {
-            _logger.LogError(ex, $"The referencec Category Id {request.CategoryId} does not exist.");
+            _logger.LogError(ex, $"The referenced Category Id {request.CategoryId} does not exist.");
             throw;
         }
         catch (Exception ex)
@@ -50,17 +50,7 @@ public class ItemService : IItemService
     {
         try
         {
-            var item = await _context.Items.FindAsync(id);
-            if (item == null)
-            {
-                throw new KeyNotFoundException($"No Item with Id {id} found.");
-            }
-            return item;
-        }
-        catch (KeyNotFoundException ex)
-        {
-            _logger.LogError(ex, $"No Item with Id {id} found.");
-            throw;
+            return await _context.Items.FindAsync(id);
         }
         catch (Exception ex)
         {
@@ -73,7 +63,15 @@ public class ItemService : IItemService
     {
         try
         {
-            var items = await _context.Items.Where(x => x.CategoryId == categoryId).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+            List<Item> items = new List<Item>();
+            if (categoryId != 0)
+            {
+                items = await _context.Items.Where(x => x.CategoryId == categoryId).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+            }
+            else
+            {
+                items = await _context.Items.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+            }
             return items;
         }
         catch (Exception ex)

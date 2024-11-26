@@ -19,37 +19,40 @@ namespace CatalogService.Controllers
             _itemService = itemService;
         }
 
-        [HttpGet("{categoryId}")]
-        public async Task<IActionResult> GetItemsByCategoryIdAsync(int categoryId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        [HttpGet]
+        public async Task<IActionResult> GetItemsByCategoryIdAsync([FromQuery] int categoryId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
                 var items = await _itemService.GetItemsByCategoryAsync(categoryId, page, pageSize);
                 if (items == null || !items.Any())
                 {
-                    return Ok(new { message = $"No Items with CategoryId {categoryId} found.", data = new List<Item>() });
+                    return Ok(new { message = $"No Items found.", data = new List<Item>() });
                 }
-                return Ok(new { message = $"Successfully retrieved Items with CategoryId {categoryId}.", data = items });
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return BadRequest(new { message = "An error occurred while retrieving the Item.", error = ex.Message });
+                return Ok(new { message = $"Successfully retrieved the Items.", data = items });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "An error occurred while retrieving the Item", error = ex.Message });
+                return StatusCode(500, new { message = "An error occurred while retrieving the Items", error = ex.Message });
             }
         }
 
-        [HttpGet("Item/{id}")]
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetItemByIdAsync(int id)
         {
-            var item = await _itemService.GetItemByIdAsync(id);
-            if (item == null)
+            try
             {
-                return NotFound(new { message = $"No Item with Id {id} found." });
+                var item = await _itemService.GetItemByIdAsync(id);
+                if (item == null)
+                {
+                    return NotFound(new { message = $"No Item with Id {id} found." });
+                }
+                return Ok(new { message = $"Successfully retrieved Item with Id {id}.", data = item });
             }
-            return Ok(new { message = $"Successfully retrieved Item with Id {id}.", data = item });
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"An error occurred while retrieving Item with id {id}", error = ex.Message });
+            }
         }
 
         [HttpPost]

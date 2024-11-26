@@ -41,14 +41,7 @@ public class CategoryService : ICategoryService
     {
         try
         {
-            var category = await _context.Categories.FindAsync(id);
-
-            return category;
-        }
-        catch (KeyNotFoundException ex)
-        {
-            _logger.LogError(ex, $"No Category with id {id} is found.");
-            throw;
+            return await _context.Categories.FindAsync(id);
         }
         catch (Exception ex)
         {
@@ -75,12 +68,12 @@ public class CategoryService : ICategoryService
         catch (DuplicateNameException ex)
         {
             _logger.LogError(ex, $"Category with name {request.Name} already exists");
-            throw new DuplicateNameException($"Category with name {request.Name} already exists");
+            throw;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "An error occurred while creating the Category.");
-            throw new Exception("An error occurred while creating the Category.");
+            throw;
         }
     }
 
